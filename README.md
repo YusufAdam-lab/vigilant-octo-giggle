@@ -1,1 +1,653 @@
-ㄴㄴㄴㄴㄴㄴ
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG 레벨링 시뮬레이터</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #4a5568;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .status-panel {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-panel h3 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .stat-item {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .stat-item strong {
+            display: inline-block;
+            width: 80px;
+        }
+
+        .xp-bar {
+            background: rgba(255, 255, 255, 0.3);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .xp-progress {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .controls-panel {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 25px;
+            border-radius: 15px;
+        }
+
+        .controls-panel h3 {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .button-group {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .monster-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-monster {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .btn-perfect {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+
+        .btn-perfect.success {
+            background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+        }
+
+        .inventory {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .inventory h4 {
+            margin-bottom: 15px;
+            color: #4a5568;
+        }
+
+        .item {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .export-area {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .export-area.show {
+            display: block;
+        }
+
+        .export-textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            border: 2px solid #4facfe;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+            margin: 10px 0;
+        }
+
+        .import-area {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .import-area.show {
+            display: block;
+        }
+
+        .log h4 {
+            margin-bottom: 15px;
+            color: #4a5568;
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.95);
+            padding-bottom: 10px;
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            border-left: 3px solid #4facfe;
+            background: rgba(79, 172, 254, 0.1);
+        }
+
+        .level-up {
+            background: rgba(255, 215, 0, 0.2) !important;
+            border-left-color: #ffd700 !important;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .monster-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎮 RPG 레벨링 시뮬레이터</h1>
+        
+        <div class="game-area">
+            <div class="status-panel">
+                <h3>📊 캐릭터 상태</h3>
+                <div class="stat-item">
+                    <strong>레벨:</strong> <span id="level">Lv.7</span>
+                </div>
+                <div class="stat-item">
+                    <strong>칭호:</strong> <span id="title">막노동꾼</span>
+                </div>
+                <div class="stat-item">
+                    <strong>XP:</strong> <span id="xp">106</span> / <span id="req-xp">600</span>
+                    <div class="xp-bar">
+                        <div class="xp-progress" id="xp-progress"></div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <strong>골드:</strong> <span id="gold">1108</span> G
+                </div>
+                
+                <div class="inventory">
+                    <h4>🎒 인벤토리</h4>
+                    <div id="inventory">비어 있음</div>
+                </div>
+            </div>
+            
+            <div class="controls-panel">
+                <h3>⚔️ 액션</h3>
+                <div class="button-group">
+                    <div class="monster-buttons">
+                        <button class="btn btn-monster" onclick="fightMonster('일반몹')">
+                            🐛 일반몹<br><small>XP+1, 골드+2</small>
+                        </button>
+                        <button class="btn btn-monster" onclick="fightMonster('중간몹')">
+                            🦎 중간몹<br><small>XP+3, 골드+5</small>
+                        </button>
+                        <button class="btn btn-monster" onclick="fightMonster('보스몹')">
+                            🐉 보스몹<br><small>XP+5, 골드+10</small>
+                        </button>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="btn btn-perfect success" onclick="perfectClear(true)">
+                            ✨ Perfect Clear<br><small>XP+10, 골드+30</small>
+                        </button>
+                        <button class="btn btn-perfect" onclick="perfectClear(false)">
+                            💥 Perfect Fail<br><small>골드-20</small>
+                        </button>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                        <button class="btn" onclick="exportSave()" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333;">
+                            📤 내보내기
+                        </button>
+                        <button class="btn" onclick="importSave()" style="background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%); color: #333;">
+                            📥 가져오기
+                        </button>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                        <button class="btn" onclick="saveGame()" style="background: linear-gradient(135deg, #81ecec 0%, #74b9ff 100%); color: white; font-size: 14px;">
+                            💾 로컬 저장
+                        </button>
+                        <button class="btn" onclick="resetGame()" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #333; font-size: 14px;">
+                            🔄 초기화
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="log" style="background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 15px; height: 300px; overflow-y: auto;">
+            <h4>📜 전투 로그</h4>
+            <div id="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // 게임 상태 (로컬 저장소에서 불러오기)
+        let gameState = loadGame() || {
+            level: 7,
+            title: "막노동꾼",
+            xp: 106,
+            gold: 1108,
+            inventory: []
+        };
+
+        // 저장/로드 함수들
+        function saveGame() {
+            try {
+                localStorage.setItem('rpg_save', JSON.stringify(gameState));
+                console.log('게임 저장됨');
+            } catch (e) {
+                console.log('저장 실패 (Claude.ai 환경에서는 지원되지 않음)');
+            }
+        }
+
+        function loadGame() {
+            try {
+                const saved = localStorage.getItem('rpg_save');
+                return saved ? JSON.parse(saved) : null;
+            } catch (e) {
+                console.log('불러오기 실패');
+                return null;
+            }
+        }
+
+        function resetGame() {
+            if (confirm('정말로 게임을 초기화하시겠습니까?')) {
+                gameState = {
+                    level: 1,
+                    title: "거지",
+                    xp: 0,
+                    gold: 0,
+                    inventory: []
+                };
+                saveGame();
+                updateUI();
+                addLog("게임이 초기화되었습니다!", false);
+            }
+        }
+
+        // 내보내기/가져오기 UI 함수들
+        function toggleExport() {
+            const exportArea = document.getElementById('exportArea');
+            const importArea = document.getElementById('importArea');
+            
+            // 가져오기 영역 숨기기
+            importArea.classList.remove('show');
+            
+            if (exportArea.classList.contains('show')) {
+                exportArea.classList.remove('show');
+            } else {
+                const saveData = btoa(JSON.stringify({
+                    ...gameState,
+                    exportDate: new Date().toISOString(),
+                    version: "1.0"
+                }));
+                
+                document.getElementById('exportData').value = saveData;
+                exportArea.classList.add('show');
+                addLog("내보내기 영역이 열렸습니다.", false);
+            }
+        }
+
+        function toggleImport() {
+            const exportArea = document.getElementById('exportArea');
+            const importArea = document.getElementById('importArea');
+            
+            // 내보내기 영역 숨기기
+            exportArea.classList.remove('show');
+            
+            if (importArea.classList.contains('show')) {
+                importArea.classList.remove('show');
+            } else {
+                importArea.classList.add('show');
+                document.getElementById('importData').value = '';
+                addLog("가져오기 영역이 열렸습니다.", false);
+            }
+        }
+
+        function copyExportData() {
+            const exportData = document.getElementById('exportData');
+            exportData.select();
+            
+            try {
+                navigator.clipboard.writeText(exportData.value).then(() => {
+                    const btn = event.target;
+                    const originalText = btn.textContent;
+                    btn.textContent = '✅ 복사 완료!';
+                    btn.style.background = 'linear-gradient(135deg, #00b894 0%, #00cec9 100%)';
+                    
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+                    }, 2000);
+                    
+                    addLog("클립보드에 복사되었습니다! 메모장에 저장하세요.", false);
+                });
+            } catch (e) {
+                // 클립보드 API 지원 안되는 경우
+                exportData.select();
+                document.execCommand('copy');
+                addLog("데이터가 선택되었습니다. Ctrl+C로 복사하세요!", false);
+            }
+        }
+
+        function loadImportedData() {
+            try {
+                const importData = document.getElementById('importData').value.trim();
+                if (!importData) {
+                    addLog("❌ 데이터를 입력해주세요!", false);
+                    return;
+                }
+                
+                const decoded = JSON.parse(atob(importData));
+                
+                // 데이터 유효성 검사
+                if (!decoded.level || !decoded.title || typeof decoded.xp !== 'number' || typeof decoded.gold !== 'number') {
+                    throw new Error('잘못된 데이터 형식');
+                }
+                
+                gameState = {
+                    level: decoded.level,
+                    title: decoded.title,
+                    xp: decoded.xp,
+                    gold: decoded.gold,
+                    inventory: decoded.inventory || []
+                };
+                
+                saveGame();
+                updateUI();
+                
+                // 가져오기 영역 숨기기
+                document.getElementById('importArea').classList.remove('show');
+                
+                addLog(`✅ 게임 데이터를 불러왔습니다! Lv.${gameState.level} ${gameState.title}`, false);
+                
+            } catch (error) {
+                addLog("❌ 잘못된 게임 데이터입니다. 다시 확인해주세요.", false);
+            }
+        }
+
+        function clearImport() {
+            document.getElementById('importData').value = '';
+            addLog("가져오기 입력창을 비웠습니다.", false);
+        }
+
+        // 몬스터 설정
+        const monsters = {
+            "일반몹": {xp: 1, gold: 2, dropRate: 0.05},
+            "중간몹": {xp: 3, gold: 5, dropRate: 0.10},
+            "보스몹": {xp: 5, gold: 10, dropRate: 0.20}
+        };
+
+        // 칭호 시스템
+        const titles = [
+            [1, 5, "거지", "아무것도 없는 상태. 오늘 밥 한 끼가 목표."],
+            [6, 10, "막노동꾼", "육체노동으로 생계를 유지한다."],
+            [11, 15, "알바 전사", "여러 알바를 전전하며 생존 중."],
+            [16, 20, "사회 초년생", "첫 정규직 입성! 월급 루팡 조심."],
+            [21, 25, "프로 직장인", "팀에서 존재감을 갖기 시작한다."],
+            [26, 30, "유능한 실무자", "프로젝트를 책임지고 완수할 수 있다."],
+            [31, 35, "팀 리더", "사람을 다루는 단계, 스트레스도 따라온다."],
+            [36, 40, "관리자", "조직 내 영향력이 커진다. 보고는 이제 받는 입장."],
+            [41, 45, "임원 후보", "조직 상층부에 진입할 준비 완료."],
+            [46, 50, "임원", "수십 명의 생계가 당신 손에 달려 있다."],
+            [51, 55, "창업가", "리스크를 안고 직접 승부를 건다."],
+            [56, 60, "CEO", "회사를 이끌며 수많은 의사결정을 한다."],
+            [61, 65, "업계 리더", "산업 내에서 이름이 통한다."],
+            [66, 70, "글로벌 리더", "해외에서 당신을 먼저 알아본다."],
+            [71, 75, "국가 고문", "정부도 당신에게 조언을 구한다."],
+            [76, 80, "정계 입문자", "사회 영향력을 기반으로 정치 무대 입성."],
+            [81, 85, "국가 대표", "국회의원, 장관급. 국민과 역사 앞에 선다."],
+            [86, 90, "국가지도자", "대통령 또는 총리급. 나라를 책임진다."],
+            [91, 95, "세계협의체 의장", "여러 국가 간 조율 능력이 탁월하다."],
+            [96, 100, "지구 대통령", "실질적 세계 리더. 인류의 미래를 설계한다."]
+        ];
+
+        // 유틸 함수들
+        function requiredXP(level) {
+            return 150 + 450 * Math.floor((level - 1) / 5);
+        }
+
+        function updateTitle() {
+            for (let [levelMin, levelMax, title, desc] of titles) {
+                if (levelMin <= gameState.level && gameState.level <= levelMax) {
+                    gameState.title = title;
+                    break;
+                }
+            }
+        }
+
+        function applyInventoryEffects() {
+            const now = Date.now();
+            let totalXPBonus = 0;
+            let totalGoldBonus = 0;
+            
+            gameState.inventory = gameState.inventory.filter(item => {
+                if (item.expiration > now) {
+                    totalXPBonus += item.effect.xp;
+                    totalGoldBonus += item.effect.gold;
+                    return true;
+                }
+                return false;
+            });
+            
+            return [totalXPBonus, totalGoldBonus];
+        }
+
+        function dropItem(monsterType) {
+            const dropRate = monsters[monsterType].dropRate;
+            if (Math.random() < dropRate) {
+                const duration = [1, 2, 3][Math.floor(Math.random() * 3)] * 24 * 60 * 60 * 1000; // 일을 밀리초로
+                const effect = [1, 2, 3][Math.floor(Math.random() * 3)];
+                const expiration = Date.now() + duration;
+                
+                return {
+                    effect: {xp: effect, gold: effect},
+                    expiration: expiration,
+                    name: `아이템 (+${effect} XP, +${effect} G)`
+                };
+            }
+            return null;
+        }
+
+        function checkLevelUp() {
+            let leveledUp = false;
+            while (true) {
+                const required = requiredXP(gameState.level);
+                if (gameState.xp < required) break;
+                
+                gameState.xp -= required;
+                gameState.level++;
+                leveledUp = true;
+                updateTitle();
+            }
+            return leveledUp;
+        }
+
+        function fightMonster(monsterType) {
+            const monster = monsters[monsterType];
+            const [xpBonus, goldBonus] = applyInventoryEffects();
+            
+            const totalXP = monster.xp + xpBonus;
+            const totalGold = monster.gold + goldBonus;
+            
+            gameState.xp += totalXP;
+            gameState.gold += totalGold;
+            
+            const item = dropItem(monsterType);
+            if (item) {
+                gameState.inventory.push(item);
+            }
+            
+            const leveledUp = checkLevelUp();
+            
+            addLog(`${monsterType} 처치! XP+${totalXP}, 골드+${totalGold}${item ? `, ${item.name} 획득!` : ''}`, leveledUp);
+            updateUI();
+            saveGame(); // 자동 저장
+        }
+
+        function perfectClear(success) {
+            if (success) {
+                gameState.xp += 10;
+                gameState.gold += 30;
+                addLog("Perfect Clear 성공! XP+10, 골드+30", false);
+            } else {
+                const loss = Math.min(20, gameState.gold);
+                gameState.gold -= loss;
+                addLog(`Perfect Clear 실패... 골드-${loss}`, false);
+            }
+            
+            const leveledUp = checkLevelUp();
+            updateUI();
+            saveGame(); // 자동 저장
+        }
+
+        function addLog(message, levelUp) {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry${levelUp ? ' level-up' : ''}`;
+            entry.textContent = message;
+            
+            if (levelUp) {
+                entry.textContent += ` 🎉 LEVEL UP! Lv.${gameState.level} (${gameState.title})`;
+            }
+            
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateUI() {
+            document.getElementById('level').textContent = `Lv.${gameState.level}`;
+            document.getElementById('title').textContent = gameState.title;
+            document.getElementById('xp').textContent = gameState.xp;
+            
+            const required = requiredXP(gameState.level);
+            document.getElementById('req-xp').textContent = required;
+            
+            const progress = (gameState.xp / required) * 100;
+            document.getElementById('xp-progress').style.width = `${progress}%`;
+            
+            document.getElementById('gold').textContent = gameState.gold;
+            
+            // 인벤토리 업데이트
+            const inventoryDiv = document.getElementById('inventory');
+            applyInventoryEffects(); // 만료된 아이템 제거
+            
+            if (gameState.inventory.length === 0) {
+                inventoryDiv.textContent = '비어 있음';
+            } else {
+                inventoryDiv.innerHTML = '';
+                gameState.inventory.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'item';
+                    const expiry = new Date(item.expiration);
+                    itemDiv.textContent = `${item.name} (만료: ${expiry.toLocaleDateString()})`;
+                    inventoryDiv.appendChild(itemDiv);
+                });
+            }
+        }
+
+        // 초기 UI 업데이트
+        updateUI();
+        
+        // 게임 로드 확인
+        if (gameState.level !== 7 || gameState.xp !== 106) {
+            addLog("이전 게임 데이터를 불러왔습니다!", false);
+        } else {
+            addLog("게임 시작! 현재 상태를 확인해보세요.", false);
+        }
+        
+        // 자동 저장 (5초마다)
+        setInterval(saveGame, 5000);
+    </script>
+</body>
+</html>
